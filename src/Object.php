@@ -19,24 +19,15 @@ class Object
 
     /**
      * 2つのオブジェクトのインスタンスが等しいかどうかを判断します。
-     * @param \Prehnite\Object $object
+     * @param mixed $value
      * @return bool 指定したオブジェクトが現在のオブジェクトと等しい場合は true。それ以外の場合は false。
      */
-    public function equals(Object $object)
+    public function equals($value)
     {
-        if (!$object instanceof static) {
+        if (!$value instanceof static) {
             return false;
         }
 
-        return ((string)$this === (string)$object);
-    }
-
-    /**
-     * 現在のオブジェクトのインスタンスを簡易的に複製し返します。
-     * @return static インスタンスの簡易的な複製
-     */
-    final public function memberwiseClone()
-    {
-        return clone $this;
+        return ((string)$this === (string)$value);
     }
 }
