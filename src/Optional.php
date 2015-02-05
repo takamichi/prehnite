@@ -6,7 +6,7 @@ namespace Prehnite;
  *
  * @package Prehnite
  */
-class Optional
+class Optional extends Object
 {
     /** @type Optional|null */
     private static $empty;
@@ -217,5 +217,18 @@ class Optional
     public function __toString()
     {
         return $this->stringOr('');
+    }
+
+    public function equals($value)
+    {
+        if (!$value instanceof self) {
+            return false;
+        }
+
+        if ($this->value instanceof Object) {
+            return $this->value->equals($value->value);
+        }
+
+        return ($this->value === $value->value);
     }
 }
