@@ -6,7 +6,7 @@ namespace Prehnite;
  *
  * @package Prehnite
  */
-class Optional
+class Optional extends Object
 {
     /** @type Optional|null */
     private static $empty;
@@ -68,31 +68,40 @@ class Optional
     }
 
     /**
-     * 値が存在し、指定された述語に一致する場合は値を含むOptionalインスタンスを返し、
+     * 値が存在し、$callback評価条件が真なら値を含むOptionalインスタンスを返し、
      * それ以外の場合は空のOptionalインスタンスを返します。
-     * @param callable $predicate 述語評価(真偽を返す)を行うクロージャ
-     * @return \Prehnite\Optional 値がフィルタ条件を満たす場合は値のOptional、それ以外の場合は空のOptional
+     * @param callable $callback 値を評価し、真偽を返す
+     * @return \Prehnite\Optional 値が評価条件を満たす場合は値を含むOptional、それ以外の場合は空のOptional
+     * @throws \Prehnite\NullPointerException $callback が呼び出せない場合
      */
-    public function filter(callable $predicate)
-    {
-        return $predicate($this->value) === true ? $this : self::ofEmpty();
-    }
-
-    /**
-     * 値が存在する場合、指定されたマッピング関数を値に適用し、結果が null でなければ結果の値を含むOptionalインスタンスを返します。
-     * それ以外の場合は空のOptionalインスタンスを返します。
-     * @param callable $mapper 存在する値に適用するマッピング関数(値を返す)
-     * @return \Prehnite\Optional 存在する値にマッピング関数を適用した結果値を含むOptional、
-     *                            それ以外の場合は空のOptional
-     * @throws \Prehnite\NullPointerException マッピング関数が null の場合
-     */
-    public function map(callable $mapper)
+    public function filter($callback)
     {
         if ($this->value === null) {
             return self::ofEmpty();
         }
 
-        if ($mapper === null) {
+        if (!is_callable($callback)) {
+            throw new NullPointerException;
+        }
+
+        return $callback($this->value) === true ? $this : self::ofEmpty();
+    }
+
+    /**
+     * 値が存在する場合 $callback を値に適用し、結果が null でなければ結果の値を含むOptionalインスタンスを返します。
+     * それ以外の場合は空のOptionalインスタンスを返します。
+     * @param callable $mapper 値に適用し、結果を返す
+     * @return \Prehnite\Optional 存在する値にマッピング関数を適用した結果値を含むOptional、
+     *                            それ以外の場合は空のOptional
+     * @throws \Prehnite\NullPointerException $callback が呼び出せない場合
+     */
+    public function map($mapper)
+    {
+        if ($this->value === null) {
+            return self::ofEmpty();
+        }
+
+        if (!is_callable($mapper)) {
             throw new NullPointerException;
         }
 
@@ -117,11 +126,16 @@ class Optional
      * 値が存在する場合は $callback をその値で呼び出し、それ以外の場合は何も行いません。
      * @param callable $callback 値が存在するときに呼び出す
      * @return void
+     * @throws \Prehnite\NullPointerException 値が存在するが、$callback が呼び出せない場合
      */
-    public function ifPresent(callable $callback)
+    public function ifPresent($callback)
     {
         if ($this->value === null) {
             return;
+        }
+
+        if (!is_callable($callback)) {
+            throw new NullPointerException;
         }
 
         $callback($this->value);
@@ -148,17 +162,17 @@ class Optional
 
     /**
      * 値が存在する場合は値を返し、それ以外の場合は $callback の呼び出し結果を返します。
-     * @param callable $callback 値が存在しないときに呼び出す
+     * @param callable $callback 値が存在しないときに呼び出し、値を返す
      * @return mixed 存在する値、それ以外の場合は $callback の結果
-     * @throws \Prehnite\NullPointerException 値が存在せず、$callback が null の場合
+     * @throws \Prehnite\NullPointerException 値が存在せず、$callback が呼び出せない場合
      */
-    public function orElseGet(callable $callback)
+    public function orElseGet($callback)
     {
         if ($this->value !== null) {
             return $this->value;
         }
 
-        if ($callback === null) {
+        if (!is_callable($callback)) {
             throw new NullPointerException;
         }
 
@@ -192,10 +206,10 @@ class Optional
 
     /**
      * 値が存在する場合は値の文字列を返し、それ以外の場合は $callback の呼び出し結果の文字列を返します。
-     * @param callable $callback 値が存在しないときに呼び出す
+     * @param callable $callback 値が存在しないときに呼び出し、値を返す
      * @return string 存在する値、それ以外の場合は $callback の結果の文字列
      */
-    public function stringOrGet(callable $callback)
+    public function stringOrGet($callback)
     {
         return (string)$this->orElseGet($callback);
     }
@@ -203,5 +217,18 @@ class Optional
     public function __toString()
     {
         return $this->stringOr('');
+    }
+
+    public function equals($value)
+    {
+        if (!$value instanceof self) {
+            return false;
+        }
+
+        if ($this->value instanceof Object) {
+            return $this->value->equals($value->value);
+        }
+
+        return ($this->value === $value->value);
     }
 }
