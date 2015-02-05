@@ -76,13 +76,11 @@ class Optional extends Object
      */
     public function filter($callback)
     {
-        if ($this->value === null) {
+        if ($this->isEmpty()) {
             return self::ofEmpty();
         }
 
-        if (!is_callable($callback)) {
-            throw new NullPointerException;
-        }
+        $this->callableCheck($callback);
 
         return $callback($this->value) === true ? $this : self::ofEmpty();
     }
@@ -97,13 +95,11 @@ class Optional extends Object
      */
     public function map($mapper)
     {
-        if ($this->value === null) {
+        if ($this->isEmpty()) {
             return self::ofEmpty();
         }
 
-        if (!is_callable($mapper)) {
-            throw new NullPointerException;
-        }
+        $this->callableCheck($mapper);
 
         return self::ofNullable($mapper($this->value));
     }
@@ -115,7 +111,7 @@ class Optional extends Object
      */
     public function get()
     {
-        if ($this->value === null) {
+        if ($this->isEmpty()) {
             throw new NoSuchElementException;
         }
 
@@ -130,13 +126,11 @@ class Optional extends Object
      */
     public function ifPresent($callback)
     {
-        if ($this->value === null) {
+        if ($this->isEmpty()) {
             return;
         }
 
-        if (!is_callable($callback)) {
-            throw new NullPointerException;
-        }
+        $this->callableCheck($callback);
 
         $callback($this->value);
     }
@@ -147,7 +141,16 @@ class Optional extends Object
      */
     public function isPresent()
     {
-        return $this->value !== null;
+        return !$this->isEmpty();
+    }
+
+    /**
+     * 値が存在しないか判断します。
+     * @return bool 値が存在しない場合は true。それ以外の場合は false。
+     */
+    private function isEmpty()
+    {
+        return ($this->value === null);
     }
 
     /**
@@ -157,7 +160,7 @@ class Optional extends Object
      */
     public function orElse($value)
     {
-        return ($this->value === null) ? $value : $this->value;
+        return $this->isPresent() ? $this->value : $value;
     }
 
     /**
@@ -168,13 +171,11 @@ class Optional extends Object
      */
     public function orElseGet($callback)
     {
-        if ($this->value !== null) {
+        if ($this->isPresent()) {
             return $this->value;
         }
 
-        if (!is_callable($callback)) {
-            throw new NullPointerException;
-        }
+        $this->callableCheck($callback);
 
         return $callback();
     }
@@ -187,7 +188,7 @@ class Optional extends Object
      */
     public function orElseThrow(\Exception $exception)
     {
-        if ($this->value === null) {
+        if ($this->isEmpty()) {
             throw $exception;
         }
 
@@ -230,5 +231,17 @@ class Optional extends Object
         }
 
         return ($this->value === $value->value);
+    }
+
+    /**
+     * 呼び出し可能か確認し、呼び出せない場合は例外をスローします。
+     * @param $callback
+     * @throws \Prehnite\NullPointerException
+     */
+    private function callableCheck($callback)
+    {
+        if (!is_callable($callback)) {
+            throw new NullPointerException;
+        }
     }
 }
