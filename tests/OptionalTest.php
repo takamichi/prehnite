@@ -236,22 +236,6 @@ class OptionalTest extends \PHPUnit_Framework_TestCase
     }
 
     /** @test */
-    public function stringOr_値があるとき値の文字列を返す()
-    {
-        $result = Optional::of(123)->stringOr('000');
-        $this->assertTrue(is_string($result));
-        $this->assertEquals('123', $result);
-    }
-
-    /** @test */
-    public function stringOr_値がないとき引数の文字列を返す()
-    {
-        $result = Optional::ofEmpty()->stringOr(123);
-        $this->assertTrue(is_string($result));
-        $this->assertEquals('123', $result);
-    }
-
-    /** @test */
     public function __toString_文字列を返す()
     {
         $result = (string)Optional::of(123);

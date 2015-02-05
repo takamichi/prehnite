@@ -195,29 +195,9 @@ class Optional extends Object
         return $this->value;
     }
 
-    /**
-     * 値が存在する場合は値の文字列を返し、それ以外の場合は引数値の文字列を返します。
-     * @param mixed $value 値が存在しないときに返す値
-     * @return string 存在する値、それ以外の場合は $value の文字列
-     */
-    public function stringOr($value)
-    {
-        return (string)$this->orElse($value);
-    }
-
-    /**
-     * 値が存在する場合は値の文字列を返し、それ以外の場合は $callback の呼び出し結果の文字列を返します。
-     * @param callable $callback 値が存在しないときに呼び出し、値を返す
-     * @return string 存在する値、それ以外の場合は $callback の結果の文字列
-     */
-    public function stringOrGet($callback)
-    {
-        return (string)$this->orElseGet($callback);
-    }
-
     public function __toString()
     {
-        return $this->stringOr('');
+        return (string)$this->orElse('');
     }
 
     public function equals($value)
