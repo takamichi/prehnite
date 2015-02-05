@@ -72,10 +72,19 @@ class Optional
      * それ以外の場合は空のOptionalインスタンスを返します。
      * @param callable $callback 値を評価し、真偽を返す
      * @return \Prehnite\Optional 値が評価条件を満たす場合は値を含むOptional、それ以外の場合は空のOptional
+     * @throws \Prehnite\NullPointerException $callback が呼び出せない場合
      */
-    public function filter(callable $predicate)
+    public function filter($callback)
     {
-        return $predicate($this->value) === true ? $this : self::ofEmpty();
+        if ($this->value === null) {
+            return self::ofEmpty();
+        }
+
+        if (!is_callable($callback)) {
+            throw new NullPointerException;
+        }
+
+        return $callback($this->value) === true ? $this : self::ofEmpty();
     }
 
     /**
@@ -86,13 +95,13 @@ class Optional
      *                            それ以外の場合は空のOptional
      * @throws \Prehnite\NullPointerException $callback が呼び出せない場合
      */
-    public function map(callable $mapper)
+    public function map($mapper)
     {
         if ($this->value === null) {
             return self::ofEmpty();
         }
 
-        if ($mapper === null) {
+        if (!is_callable($mapper)) {
             throw new NullPointerException;
         }
 
@@ -117,11 +126,16 @@ class Optional
      * 値が存在する場合は $callback をその値で呼び出し、それ以外の場合は何も行いません。
      * @param callable $callback 値が存在するときに呼び出す
      * @return void
+     * @throws \Prehnite\NullPointerException 値が存在するが、$callback が呼び出せない場合
      */
-    public function ifPresent(callable $callback)
+    public function ifPresent($callback)
     {
         if ($this->value === null) {
             return;
+        }
+
+        if (!is_callable($callback)) {
+            throw new NullPointerException;
         }
 
         $callback($this->value);
@@ -152,13 +166,13 @@ class Optional
      * @return mixed 存在する値、それ以外の場合は $callback の結果
      * @throws \Prehnite\NullPointerException 値が存在せず、$callback が呼び出せない場合
      */
-    public function orElseGet(callable $callback)
+    public function orElseGet($callback)
     {
         if ($this->value !== null) {
             return $this->value;
         }
 
-        if ($callback === null) {
+        if (!is_callable($callback)) {
             throw new NullPointerException;
         }
 
@@ -195,7 +209,7 @@ class Optional
      * @param callable $callback 値が存在しないときに呼び出し、値を返す
      * @return string 存在する値、それ以外の場合は $callback の結果の文字列
      */
-    public function stringOrGet(callable $callback)
+    public function stringOrGet($callback)
     {
         return (string)$this->orElseGet($callback);
     }
