@@ -76,13 +76,9 @@ class Optional extends Object
      */
     public function filter($callback)
     {
-        if ($this->isEmpty()) {
-            return self::ofEmpty();
-        }
+        $result = $this->map($callback)->orElse(false);
 
-        $this->callableCheck($callback);
-
-        return $callback($this->value) === true ? $this : self::ofEmpty();
+        return ($result === true) ? $this : static::ofEmpty();
     }
 
     /**
